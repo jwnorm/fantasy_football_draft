@@ -28,15 +28,15 @@ This document is a walkthrough of a fantasy football draft optimization model de
 
 The goal of the project is to:
 1) Successfully model a fantasy football draft as a **B**inary **I**nteger **P**rogramming (BIP) model;
-2) Compare this against actual data through Week 11 of the 2025 NFL season; and
-3) Conduct a scenario analysis by changing various aspects of the draft
+2) Compare this against actual data through Week 13 of the 2025 NFL season; and
+3) Conduct a series of scenario analyses by changing various aspects of the draft.
 
 This report will be concerned with the first two items. Before we begin, we will import the required libraries, including `HiGHS` as the solver.
 """
 
 # ╔═╡ 8f3e1c46-2b62-40d6-8f22-f7ecbb1a9d92
 md"""
-Next, let's read in our data file that includes the players and their various statistics. The top 208 players drafted during [**N**ational **F**antasy **C**hampionship (NFC)] (https://nfc.shgn.com/adp/football) leagues in the week leading up to the start of the NFL regular season are included, along with their **A**verage **D**raft **P**osition (ADP) information. The preseason projections were obtained from [The Athletic's Jake Ciely](https://www.nytimes.com/athletic/6432965/2025/06/19/fantasy-football-2025-rankings-projections-cheat-sheet/), and are scored using **P**oints **P**er **R**eception (PPR).
+Next, let's read in our data file that includes the players and their various statistics. The top 208 players drafted during [**N**ational **F**antasy **C**hampionship (NFC)] (https://nfc.shgn.com/adp/football) leagues in the week leading up to the start of the NFL regular season are included, along with their **A**verage **D**raft **P**osition (ADP) information. The preseason projections were obtained from [*The Athletic's* Jake Ciely](https://www.nytimes.com/athletic/6432965/2025/06/19/fantasy-football-2025-rankings-projections-cheat-sheet/), and are scored using **P**oints **P**er **R**eception (PPR).
 """
 
 # ╔═╡ f5b3c6fa-3fc7-4a73-a0b3-6e77cc0391f8
@@ -52,9 +52,10 @@ A common strategy in almost all leagues is to draft a defense and kicker in the 
 
 Let's define the index sets below:
 
-$i \in M = \{\text{Ja'Marr Chase}, \text{Bijan Robinson}, \dots, \text{Joe Flacco}\}$
-$j \in N = \{1, 2, \dots, 14\}$
-
+$M = \{\text{Ja'Marr Chase}, \text{Bijan Robinson}, \dots, \text{Joe Flacco}\}$
+$N = \{1, 2, \dots, 14\}$
+$B = \{5, 6, 7, 8, 9, 10, 11, 12, 14\}$
+$P = \{\text{QB}, \text{RB}, \text{WR}, \text{TE}, \text{Flex}\}$
 """
 
 # ╔═╡ 823fe90d-c475-4878-b40d-3bcd8d820f2d
@@ -111,7 +112,7 @@ md"""
 
 Now we can get into building the BIP. There will be almost 3,000 binary decision variables, which correspond to the player and the round they were selected in:
 
-$x_{ij} \in \{0, 1\}, \ for\ i \in M, \ j \in N$
+$x_{ij} \in \{0, 1\}, \ \forall i \in M, \ \forall j \in N$
 """
 
 # ╔═╡ b6f4bd46-fcd7-4818-86d1-539092c4dd58
@@ -127,9 +128,9 @@ end
 
 # ╔═╡ c8b692cb-3ec7-42da-80d3-7459df1ae2c3
 md"""
-We are interested in maximizing the total number of projected fantasy points accumulated by the players, denoted by $c_j$, that we select in the draft:
+We are interested in maximizing the total number of projected fantasy points accumulated by the players, denoted by $c_i$, that we select in the draft:
 
-$\text{max} \ z = \sum_{(i,j)}{c_{j} x_{ij}}$
+$\text{max} \ z = \sum_{i \in M}\sum_{j \in N}{c_{i} x_{ij}}$
 """
 
 # ╔═╡ aa368c66-a628-4266-9a9b-787139836bea
@@ -153,7 +154,7 @@ This problem is conceptually very similar to the assignment problem, with some a
 
 These will defined in order below, beginning with the requirement that exactly one player is selected each round:
 
-$\sum_{i}{x_{ij}} = 1,\ \text{for}\ j=1, \dots, 14$
+$\sum_{i \in M}{x_{ij}} = 1,\ \forall j \in N$
 """
 
 # ╔═╡ 1566b406-89b8-4d63-9cf6-efa4f66b8574
@@ -166,7 +167,7 @@ $\sum_{i}{x_{ij}} = 1,\ \text{for}\ j=1, \dots, 14$
 md"""
 Next, we need to make sure that a player is not selected more than once:
 
-$\sum_{j=1}^{14}{x_{ij}} ≤ 1,\ \text{for}\ i \in M$
+$\sum_{j \in N}{x_{ij}} ≤ 1,\ \forall i \in M$
 """
 
 # ╔═╡ 3e9ac665-89fd-4ab0-a789-6a4e3700e722
@@ -179,11 +180,11 @@ $\sum_{j=1}^{14}{x_{ij}} ≤ 1,\ \text{for}\ i \in M$
 md"""
 To enforce the position at which players are able to be selected, we require two groups of constraints; this is due to the snake draft format. Defining ADP as $adp_i$, we have the following constraints for odd rounds:
 
-$\sum_{i}{adp_{i}x_{ij}} ≥ 12(j-1) + 6,\ \text{for}\ j=1,3,5,...,13$
+$\sum_{i \in M}{adp_{i}x_{ij}} ≥ 12(j-1) + 6,\ j=1,3,5,...,13$
 
 Similarly, for even rounds we have:
 
-$\sum_{i}{adp_{i}x_{ij}} ≥ 12(j-1) + 7,\ \text{for}\ j=2,4,6,...,14$
+$\sum_{i \in M}{adp_{i}x_{ij}} ≥ 12(j-1) + 7,\ j=2,4,6,...,14$
 """
 
 # ╔═╡ f58d5443-fa5e-4dcb-8ce4-e5991c135bd7
@@ -204,7 +205,7 @@ $\sum_{i}{adp_{i}x_{ij}} ≥ 12(j-1) + 7,\ \text{for}\ j=2,4,6,...,14$
 md"""
 Now, we need to ensure that each position has at least the minimum number of eligible players. Let us define $p_{ik}$ as $1$ if player $i$ is eligible to play position $k$, and $0$ otherwise. We will also define $pos_k$ as the minimum required players for position $k$:
 
-$\sum_{i}\sum_{j=1}^{14}{p_{ik}x_{ij}} ≥ pos_{p},\ \text{for}\ k \in \{\text{QB}, \text{RB}, \text{WR}, \text{TE}, \text{Flex}\}$
+$\sum_{i \in M}\sum_{j \in N}{p_{ik}x_{ij}} ≥ pos_{k},\ \forall k \in P$
 """
 
 # ╔═╡ 391f1ec6-d519-4847-9a75-a6e51a416986
@@ -218,7 +219,7 @@ $\sum_{i}\sum_{j=1}^{14}{p_{ik}x_{ij}} ≥ pos_{p},\ \text{for}\ k \in \{\text{Q
 md"""
 We now need to limit the number of quarterbacks selected to two. If we do not, it is likely the model will fill the entire bench with quarterbacks since they typically score the most points among the different position groups. It is standard practice to only select two quarterbacks in a standard draft anyway.
 
-$\sum_{i}\sum_{j=1}^{14}{p_{i,\text{QB}}x_{ij}} \le 2$
+$\sum_{i \in M}\sum_{j \in N}{p_{i,\text{QB}}x_{ij}} \le 2$
 """
 
 # ╔═╡ b1d278e8-6af7-4b8f-8fb8-061b1bc78d0a
@@ -229,9 +230,9 @@ $\sum_{i}\sum_{j=1}^{14}{p_{i,\text{QB}}x_{ij}} \le 2$
 
 # ╔═╡ 9ac8c40f-0625-4803-a5aa-8322d7051afe
 md"""
-Lastly, we need to ensure that no more than three players share the same bye week. We will define $b_{ir}$ as $1$ if player $i$ has a bye during week $r$, and $0$ otherwise.
+Lastly, we need to ensure that no more than three players share the same bye week. We will define $b_{il}$ as $1$ if player $i$ has a bye during week $l$, and $0$ otherwise.
 
-$\sum_{i}\sum_{j=1}^{14}{b_{ir}x_{ij}} \le 3,\ \text{for}\ r \in \{5, 6, 7, 8, 9, 10, 11, 12, 14\}$
+$\sum_{i \in M}\sum_{j \in N}{b_{il}x_{ij}} \le 3,\ \forall l \in B$
 """
 
 # ╔═╡ 488b3b78-be30-4fa0-a3dd-08f3029f4a98
@@ -256,7 +257,7 @@ end
 
 # ╔═╡ 9bde5945-9777-4454-aceb-ddd645acc404
 md"""
-We see that the optimal value to our fantasy draft problem is $(Int(round(objective_value(model); digits=0))). Let's see the breakdown of the optimal team and when each player was selected in the draft.
+We see that the optimal value to our fantasy draft problem is $(Int(round(objective_value(model); digits=0))). Let's see the breakdown of the optimal team and when each player was selected in the draft. This will be referenced as the `base` model.
 """
 
 # ╔═╡ 256c5aeb-9bbf-416b-bce3-43bf7cdd08fb
@@ -293,7 +294,7 @@ Let's confirm that are constraints are being met:
 * There are 3 players with bye week 8; all others are 2 or under
 * The draft position constraints are correctly holding
 
-Looks like this is indeed a feasible solution! Now we can turn our attention to analysis of the drafted roster. The draft strategy can best be described as *heroRB*, meaning that the first several selections are all top-end running backs. This includes Christian McCaffrey, who has been the overall top player in fantasy several times, and Bucky Irving, a talented second year player hoping to have a jump in performance. This is notable because PPR leagues generally see a higher value placed on wide receivers since they catch the ball more often.
+Looks like this is indeed a feasible solution! Now we can turn our attention to analysis of the drafted roster. Runnings backs are prioritized in the early rounds, a strategy that has decreased in popularity since PPR leagues have become the normal scoring setting. In contrast, the strategy concerning quarterbacks in this model is commonly followed. Since the gap in projected points between the top and average quarterbacks is not a wide when compared to the other positions, they are both selected in the later rounds. Thus, even backup position players are prioritized before the starting quarterback. No roster positions are constrained at their lower bound, while quarterbacks are constrained at their upper bound. This follows the intuition that was developed in the preceding section.
 
 Another interesting note is that both quarterbacks were taken towards the very end of the draft. This is a very common draft strategy that we did not specifically tell the model to follow, it chose to on its own.
 """
@@ -303,7 +304,7 @@ md"""
 ## Comparison to Actual Results
 
 
-Now that we have the optimal roster based on preseason projections, let's run the same model, but this time use actual fantasy points through Week 11 of the NFL season. This data was sourced from [**P**ro **F**ootball **F**ocus (PFF)](https://www.pff.com/fantasy/stats).
+Now that we have the optimal roster based on preseason projections, let's run the same model, but this time use actual fantasy points through Week 13 of the NFL season. This data was sourced from [**P**ro **F**ootball **F**ocus (PFF)](https://www.pff.com/fantasy/stats).
 
 To make this a little easier, let's put all of the relevant code into a function that we can run with a single click:
 
@@ -311,7 +312,7 @@ To make this a little easier, let's put all of the relevant code into a function
 
 # ╔═╡ 3c3d9a5e-9bb1-46bb-bbb7-ca02f9e993ca
 """
-This function solves the binary integer programming model for the fantasy football draft using actual PPR fantasy points scored through Week 11 of the 2025 NFL season.
+This function solves the binary integer programming model for the fantasy football draft using actual PPR fantasy points scored through Week 13 of the 2025 NFL season.
 
 Arguments
 
@@ -348,7 +349,7 @@ function solve_true_model(position_requirements::OrderedDict{String, Int64};
 	# objective function
 	@objective(model, 
 		   	   Max, 
-		       sum(x[df[i, :player_name], j] * df[i, :week11_actual_ppr_points] 
+		       sum(x[df[i, :player_name], j] * df[i, :week13_actual_ppr_points] 
 		       for i=1:M, j=1:N))
 
 	# constraints
@@ -449,7 +450,7 @@ function display_drafted_players(x)
 	sort!(drafted_players_df, order(:round))
 
 	# display roster
-	cols = [:round, :player_name, :bye_week, :adp, :position, :week11_actual_ppr_points]
+	cols = [:round, :player_name, :bye_week, :adp, :position, :week13_actual_ppr_points]
 	clean_drafted_players = drafted_players_df[:, cols]
 	
 	return clean_drafted_players
@@ -464,24 +465,22 @@ end
 
 # ╔═╡ 4e9c8d2d-a120-4982-858a-f6cc1743447a
 md"""
-If you have been following the 2025 NFL season, this list comes as no surpise. Jonathan Taylor has been the overall best player in all of fantasy, Emeka Egbuka is a dynamic rookie wide reciever that is a great value at his draft position, and Drake Maye is in the midst of an MVP season as the quarterback for the New England Patriots. The only player that overlaps from our preseason model is Christian McCaffrey, who was selected in the first round in both cases. This illustrates the variability that is observed in the NFL from year to year.
+The intuition with the `true` model is that this is the roster that would be selected with the benefit of a perfect forecast. From a strategy perspective, both models behave similarly; however, there is little overlap between the actual players selected. The only shared player is Christian McCaffrey, an elite player returning from a major injury that impacted his previous season. In fact, many of these are players coming off disappointing 2024 seasons, suggesting that there is value to be gained from players who have a history of strong performance but recently have performed poorly. 
 
-The actual draft strategy did not change with the benefit for foresight; the model still chose to heavily favor running backs early in the draft. This further suggests that the *heroRB* strategy makes sense to implement in PPR leagues.
-
-Using the Week 11 actual points, let's see how our **base** drafted team compares to **true** roster, in terms of total points.
+Using the Week 13 actual points, let's see how our `base` drafted team compares to `true` roster, in terms of total points.
 """
 
 # ╔═╡ b9824aaa-0943-407d-9271-9792b263c340
 begin
-	base_total = sum(drafted_players_df[:, :week11_actual_ppr_points])
-	true_total = sum(true_drafted_players_df[:, :week11_actual_ppr_points])
+	base_total = sum(drafted_players_df[:, :week13_actual_ppr_points])
+	true_total = sum(true_drafted_players_df[:, :week13_actual_ppr_points])
 
 	base_correct_pct = base_total / true_total
 end;
 
 # ╔═╡ 67e5cc65-2a07-4639-89b1-ab88b00658f6
 md"""
-The base model has attained $(round(base_correct_pct * 100; digits=1))% of the total possible points through Week 11. This further asserts the variation and randomness inherent in an NFL season. After all, if it was this simple to select the perfect roster, fantasy football would be quite boring.
+The `base` model has attained $(round(base_correct_pct * 100; digits=1))% of the maximum possible points through Week 13. This further asserts the variation and randomness inherent in an NFL season. After all, if it was this simple to select the perfect roster, fantasy football would be quite boring.
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -1016,16 +1015,16 @@ version = "5.8.0+1"
 # ╠═b6f4bd46-fcd7-4818-86d1-539092c4dd58
 # ╟─c8b692cb-3ec7-42da-80d3-7459df1ae2c3
 # ╠═aa368c66-a628-4266-9a9b-787139836bea
-# ╟─cf3aa873-a855-45ce-9e67-6aea9e161268
+# ╠═cf3aa873-a855-45ce-9e67-6aea9e161268
 # ╠═1566b406-89b8-4d63-9cf6-efa4f66b8574
-# ╟─c354d05a-66b0-4b32-9414-140084ab3057
+# ╠═c354d05a-66b0-4b32-9414-140084ab3057
 # ╠═3e9ac665-89fd-4ab0-a789-6a4e3700e722
 # ╟─80a752e4-a209-44fd-a886-a727e215d340
 # ╠═f58d5443-fa5e-4dcb-8ce4-e5991c135bd7
 # ╠═bfddf2d6-6705-43f5-a159-80f1ba09444e
-# ╟─c90b82df-a153-4b4e-8aa0-22fb11d57626
+# ╠═c90b82df-a153-4b4e-8aa0-22fb11d57626
 # ╠═391f1ec6-d519-4847-9a75-a6e51a416986
-# ╟─67060b03-684b-4191-9119-65d6994faf64
+# ╠═67060b03-684b-4191-9119-65d6994faf64
 # ╠═b1d278e8-6af7-4b8f-8fb8-061b1bc78d0a
 # ╟─9ac8c40f-0625-4803-a5aa-8322d7051afe
 # ╠═488b3b78-be30-4fa0-a3dd-08f3029f4a98

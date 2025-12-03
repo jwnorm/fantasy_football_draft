@@ -26,12 +26,12 @@ The goal of the project is to:
 
 1)  Successfully model a fantasy football draft as a BIP model;
 2)  Compare this against actual data through Week 11 of the 2025 NFL season; and
-3)  Conduct a scenario analysis by changing various aspects of the draft
+3)  Conduct a series of scenario analyses by changing various aspects of the draft.
 
 The scenario analyses will include:
 
 -   Projection system utilized
--   Beginning draft position in round one
+-   Beginning draft position in the first round
 -   Proxy for player draft value
 -   Reception scoring settings
 -   Impact of removing the **T**ight **E**nd (TE) positional requirement

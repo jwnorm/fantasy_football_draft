@@ -17,10 +17,10 @@ md"""
 md"""
 ## Introduction
 
-In the previous analysis, we succssfully modeled the 2025 NFL fantasy draft as a **B**inary **I**nteger **P**rogramming (BIP) model and compared it against the ideal roster through Week 11. This report will build on the previous analysis and will be concerned with the third objective: conducting a scenario analysis of different inputs, including:
+In the previous analysis, we succssfully modeled the 2025 NFL fantasy draft as a **B**inary **I**nteger **P**rogramming (BIP) model and compared it against the ideal roster through Week 13. This report will build on the previous analysis and will be concerned with the third objective: conducting a scenario analysis of different inputs, including:
 
 * Projection system utilized
-* Beginning draft position in round one
+* Beginning draft position in the first round
 * Proxy for player draft value
 * Reception scoring settings
 * Impact of removing the **T**ight **E**nd (TE) positional requirement
@@ -302,26 +302,26 @@ end
 
 # ╔═╡ 6386a46e-d61e-4929-acff-baa703fe75b4
 md"""
-This is indeed the same roster and the same optimal value of total projected points. We will refer to this roster as the **base** roster throughout the remainder of this document.
+This is indeed the same roster and the same optimal value of total projected points. We will refer to this roster as the `base` roster throughout the remainder of this document.
 
-Now, let's look at the model that is selected using actual fantasy points through Week 11 of the 2025 NFL season.
+Now, let's look at the model that is selected using actual fantasy points through Week 13 of the 2025 NFL season.
 """
 
 # ╔═╡ 84cd04fb-c6cf-4b51-8978-669591a7bbee
 begin
 	true_model = run_fantasy_football_draft(position_requirements;
-							   				projections=:week11_actual_ppr_points)
+							   				projections=:week13_actual_ppr_points)
 	true_model
 end 
 
 # ╔═╡ 33f25610-3729-4166-a335-97c5ce72e2d5
 md"""
-This **true** roster will be referenced and compared against the various scenarios as well. Let's create a function to calculate the actual point total for a drafted roster as a percentage of this **true** roster's points.
+This `true` roster will be referenced and compared against the various scenarios as well. Let's create a function to calculate the actual point total for a drafted roster as a percentage of this **true** roster's points.
 """
 
 # ╔═╡ efa15877-1686-4db5-b7cc-9952cf9d72a5
 """
-Calculates the actual points scored through Week 11 for the given roster and that point total as a percentage of possible points based on the **true** roster of players.
+Calculates the actual points scored through Week 13 for the given roster and that point total as a percentage of possible points based on the **true** roster of players.
 
 Arguments
 
@@ -343,8 +343,8 @@ function calculate_point_attainment_percent(model_df::DataFrame)
 	roster_df = filter(:player_name => row -> row ∈ drafted_players, df)
 
 	# calculate point totals for drafted players and true roster
-	drafted_total = sum(roster_df[:, :week11_actual_ppr_points])
-	true_total = sum(true_model[:, :week11_actual_ppr_points])
+	drafted_total = sum(roster_df[:, :week13_actual_ppr_points])
+	true_total = sum(true_model[:, :week13_actual_ppr_points])
 
 	# calculate total point attainment percentage
 	correct_pct = drafted_total / true_total
@@ -373,11 +373,11 @@ md"""
 
 One of the primary factors that will influence the optimal solution is the projection system used to forecast total fantasy points. The BIP model is only as strong as the projections after all. This is why I chose to use [Jake Ciely's projections](https://www.nytimes.com/athletic/6432965/2025/06/19/fantasy-football-2025-rankings-projections-cheat-sheet/) from *The Athletic*, which I have utilized for several fantasy seasons and have a high degree of trust in. Other sources that I have obtained projections from include:
 
-* **[Pro Football Focus (PFF)](https://www.pff.com/news/fantasy-football-rankings-builder-2025):** A football analytics website that specializes in advanced metrics and player grades
+* **[Pro Football Focus (PFF)](https://www.pff.com/news/fantasy-football-rankings-builder-2025):** A football analytics website that specializes in advanced metrics and player grades.
 
-* **[numberFire](https://www.fanduel.com/research/fantasy-football-printable-cheat-sheet-top-200-players-for-12-team-ppr-league-2025):** Partnered with FanDuel Sportsbook to provide daily fantasy sports statistics and forecasts
+* **[numberFire](https://www.fanduel.com/research/fantasy-football-printable-cheat-sheet-top-200-players-for-12-team-ppr-league-2025):** Partnered with FanDuel Sportsbook to provide daily fantasy sports statistics and forecasts.
 
-* **[Rotoballer](https://www.rotoballer.com/free-fantasy-football-draft-cheat-sheet):** General fantasy sports website that offers fantasy analysis, player rankings, and other projections
+* **[RotoBaller](https://www.rotoballer.com/free-fantasy-football-draft-cheat-sheet):** General fantasy sports website that offers fantasy analysis, player rankings, and other projections.
 
 These models are proprietary, so there is not a ton of insight into the key differences between them. Instead, we will focus on the draft strategies that result from each model to see if there are any key differences. Additionally, the *best* projection system will be the one that has the highest attainment percentage compared against the **true** roster. To perform this operation, we will be adjusting the values of the coefficent $c_i$ for each player $i$.
 
@@ -388,7 +388,7 @@ These models are proprietary, so there is not a ton of insight into the key diff
 md"""
 ### PFF
 
-To begin, let's use *PFF* projections.
+To begin, let's use PFF projections.
 """
 
 # ╔═╡ 5d07e897-ac1a-47d0-920c-37ec5690ba43
@@ -400,9 +400,9 @@ end
 
 # ╔═╡ 193c967b-e0f6-44ff-9c53-b72606c70d27
 md"""
-Firstly, there is very little overlap between the **PFF** model and the **base** model: the only player that appears on both is Bucky Irving. The most important pick in any draft is often the first round selection. The **PFF** model decided to go with Ashton Jeanty over Christian McCaffrey. Jeanty has no NFL experience, but there was considerable buzz about his potential coming into 2025; McCaffrey was viewed as risky because he is injury-prone and could see his performance regress coming off a major injury in 2024.
+Firstly, there is very little overlap between the `PFF` model and the `base` model: the only player that appears on both is Bucky Irving. The most important pick in any draft is often the first-round selection. The **PFF** model decided to go with Ashton Jeanty over Christian McCaffrey. Jeanty has no NFL experience, but there was considerable buzz about his potential coming into 2025; McCaffrey was viewed as risky because he is injury-prone and could see his performance regress coming off a major injury in 2024.
 
-From a draft strategy perspective, the **PFF** model still follows the *heroRB* template by doubling up on running backs in the first two rounds; however, the strategy diverges considerably when it comes to quarterbacks. instead of taking both quarterbacks back-to-back near the end of the draft, this model opts to select two premium options in the early rounds: Josh Allen and Patrick Mahomes. This approach exploits the fact that the elite quarterbacks form their own tier; they are definitively more productive than all others.
+From a draft strategy perspective, the `PFF` model still values running backs by doubling up on running backs in the first two rounds; however, the strategy diverges considerably when it comes to quarterbacks. Instead of taking both quarterbacks back-to-back near the end of the draft, this model opts to select two premium options in the early rounds: Josh Allen and Patrick Mahomes. The quarterback position will be an area of strength for the `PFF` roster when compared to peer rosters resulting from the same draft.
 
 Now, lets calculate the attainment percent.
 """
@@ -412,14 +412,14 @@ Now, lets calculate the attainment percent.
 
 # ╔═╡ 92d721fe-d483-44a4-8f20-757d5778ec62
 md"""
-This percentage is lower than what we saw in the **base** case, suggesting that these projections are weaker than those created by *The Athletic*.
+This percentage is 5 percent lower than what we saw in the `base` case, suggesting that these projections are weaker than those created by *The Athletic*.
 """
 
 # ╔═╡ 18d13fb4-b006-4123-a174-bafff9ca8aa3
 md"""
 ### numberFire
 
-Moving on, we will assess the *numberFire* projections next.
+Moving on, we will assess the numberFire projections next.
 """
 
 # ╔═╡ 99dc336e-b4b4-4f8e-8e8e-f4a5e22588c8
@@ -431,9 +431,9 @@ end
 
 # ╔═╡ bfc56502-f8bb-4b47-8b0f-a895e88dfe05
 md"""
-The **numberFire** model follows a different strategy, favoring wide receivers instead of running backs. The first pick is a running back; however, Christian McCaffrey is a unique case because he will catch considerably more balls than the average running back. This puts him more in the wide receiver discussion. Intuitively, this strategy make more sense in a PPR league, since any reception is valued at a full point, and wide receivers are the primary pass-catching options. In fact, only one other running back is selected: Joe Mixon. Therefore, the running back position constraint is binding in this model. Going into 2025, it was expected that he may return from injury somewhere in the middle of the season. He has yet to return as of Week 11 and is likely to miss the entire year. With limited running back depth, this roster will face some significant challenges going forward. This was a high-risk, high-reward strategy that did not pay off in this case.
+The `numberFire` model follows a different strategy commonly known as *Hero RB*. A high value running back is taken in the first round, then no others are taken until the end of the draft. In this case, the hero running back is Christian McCaffrey. He is a unique case because he will catch considerably more balls than the average running back, giving him surplus value. The next several picks are all receivers. Intuitively, this strategy makes sense in a PPR league, since any reception is valued at a full point, and wide receivers are the primary pass-catching options. In fact, only one other running back is selected: Joe Mixon. Therefore, the running back position constraint is binding in this model. Going into 2025, it was expected that he may return from injury somewhere in the middle of the season. He has yet to return as of Week 13 and is likely to miss the entire year. With limited running back depth, this roster will face some significant challenges going forward. This was a high-risk, high-reward strategy that did not pay off in this case.
 
-The quarterbacks we selected towards the end of this draft, in line with the common approach in most fantasy drafts. Two players in the **base** model repeat here: Christian McCaffrey and Travis Kelce. We are starting to see a trend that these players are great values at their draft positions.
+The quarterbacks were selected towards the end of this draft, in line with the common approach in most fantasy drafts. Two players in the `base` model repeat here: Christian McCaffrey and Travis Kelce. We are starting to see a trend that these players are great values at their draft positions.
 
 We can now calculate the attainment percent for this model.
 """
@@ -443,14 +443,14 @@ We can now calculate the attainment percent for this model.
 
 # ╔═╡ 93083aad-f12b-4976-9124-04ea2119ae77
 md"""
-This is slightly higher than the **base** model, so we conclude that these projections are roughly on par with the **base** model in terms of their predictive power.
+This nearly equivalent to the `base` model, so we conclude that these projections are on par with the `base` model in terms of their predictive power.
 """
 
 # ╔═╡ e7d3be37-622e-44c0-ba5e-47a321852e26
 md"""
-### Rotoballer
+### RotoBaller
 
-Moving to the last set of projections, let's see the roster determined by the *Rotoballer* forecast.
+Moving to the last set of projections, let's see the roster determined by the RotoBaller forecast.
 """
 
 # ╔═╡ a213ef1f-2525-4571-8208-106b0069c54a
@@ -462,9 +462,9 @@ end
 
 # ╔═╡ 7d9fb468-8ced-4e89-beb9-de8619fb33aa
 md"""
-This **Rotoballer** model follows something of a hybrid draft strategy, initially focusing on running backs and then shifting to wide recievers. In fact, the two running backs it selects are Christian McCaffrey and Jonathan Taylor, the top two players selected by the **true** model. I would still classify this as a *heroRB* strategy since the two most valuable picks were spent on running backs. These are also the only two running backs selected, so they need to perform at elite levels because there is no depth to replace them. The running back constraint is also binding here.
+The `RotoBaller` model follows a balanced strategy, initially focusing on running backs and then shifting to wide receivers. In fact, the two running backs it selects are Christian McCaffrey and Jonathan Taylor, the top two players selected by the `true` model. This draft could almost be considered a *Hero RB* strategy as these are the only two running backs selected. They need to perform at elite levels because there is no depth to replace them; however, these are actually the top two overall players in all of fantasy through Week 13. It should be mentioned that the running back constraint is also binding here. 
 
-Like in the **base** model, the quarterbacks are selected towards the end of the draft to emphasize the value of the other positions earlier in the draft. Another note is that this model selects two tight ends, positions that are typically more volatile in scoring and with lower ceilings.
+Like in the `base` model, the quarterbacks are selected towards the end of the draft to emphasize the value of the other positions earlier in the draft. Another note is that this model selects two tight ends, positions that are typically more volatile in scoring and with lower ceilings.
 
 Let's see what the attainment percentage is for this roster.
 """
@@ -474,7 +474,7 @@ Let's see what the attainment percentage is for this roster.
 
 # ╔═╡ 3562bd2a-9d8c-4c2f-84c1-6793c047bb52
 md"""
-Wow, this is significantly higher than the other three models, suggesting that these are the strongest projections for the 2025 NFL season. This comes as no surpise since three of the players from the **true** roster are selected in the **Rotoballer** model: Christian McCaffrey, Jonathan Taylor, and Michael Pittman Jr. Since Taylor is the overall top fantasy player as of Week 11, he is likely driving a large part of this number.
+Wow, this is significantly higher than the other three models, suggesting that these are the strongest projections for the 2025 NFL season. This comes as no surpise since the top two players from the `true` roster are selected in the `RotoBaller` model: Christian McCaffrey and Jonathan Taylor. Since McCaffrey and Taylor are the overall number 1 and 2, respectively, fantasy players as of Week 13, which is driving a significant portion of this value.
 """
 
 # ╔═╡ eb6dd48c-a72b-44ef-b55d-121d41ff8347
@@ -487,7 +487,7 @@ Let's compare the aggregate statistics from the models discussed above in a summ
 # ╔═╡ 05a5c19a-03cd-4ac5-a9b4-d7c0d8e974f3
 begin
 	# get list of model names
-	proj_models = ["true", "The Athletic (base)", "PFF", "numberFire", "Rotoballer"]
+	proj_models = ["true", "The Athletic (base)", "PFF", "numberFire", "RotoBaller"]
 
 	# get list of model projected point totals
 	proj_pts = [
@@ -506,9 +506,9 @@ end
 
 # ╔═╡ a7c5e1fd-eeba-46e3-90c0-ee67a275856c
 md"""
-We see that the **Rotoballer** model is the least optimistic in terms of projected points, while the **base** model is the most optimistic. The **base**, **PFF**, and **numberFire** models are all achieving around the same percentage of possible points through Week 11; however, the **Rotoballer** model is significantly higher, capturing over 70 percent of the points from the **true** optimal team. This seems like the best model to use going forward in future fantasy seasons.
+We see that the `RotoBaller` model is the least optimistic in terms of projected points, while the `base` model is the most optimistic. The `base`, `PFF`, and `numberFire` models are all achieving around the same percentage of possible points through Week 13; however, the `RotoBaller` model is significantly higher, capturing over 70 percent of the points from the `true` optimal team. This seems like the best model to use going forward in future fantasy seasons.
 
-Additionally, almost all models followed a *heroRB* strategy and opted to select their quarterbacks towards the end of the draft. This indicates that, at least in 2025, these strategies are the preferred way to construct a roster. Lastly, certain players kept getting selected, asserting that the market undervalues these players relative to their expected fantasy points. This includes Christian McCaffrey, Bucky Irving, Tyreek Hill, DK Metcalf, Jakobi Meyers, and Travis Kelce.
+Additionally, almost all models chose to draft running backs in the first two rounds and opted to select their quarterbacks towards the end of the draft. This indicates that, at least in 2025, these strategies are the preferred way to construct a roster. Lastly, certain players were routinely selected, affirming that the market undervalues these players relative to their expected fantasy points. This includes Christian McCaffrey, Bucky Irving, Tyreek Hill, DK Metcalf, Jakobi Meyers, and Travis Kelce.
 """
 
 # ╔═╡ 3a63c7b0-ceb6-4cf6-a5fc-bb5352ea6aab
@@ -517,16 +517,16 @@ md"""
 
 For the next topic, we will investigate whether the initial draft position has a material impact on roster construction. This will include the quality of players and the total projected fantasy points.
 
-The first overall pick will be able to draft the top projected fantasy player; however, the snake format of the draft means that they will not draft another player until 23 picks later. Conversely, a team drafting in the last spot will be able to stack 2 players of the same approximate value in the first two rounds. Over the course of an entire draft, do these differences in draft position balance to be roughly equal, or is their an ideal starting position? Additionally, is there a distinct difference in approach depending on the starting position? We seek to determine the answer to these questions in this section.
+The first overall pick will be able to draft the top projected fantasy player; however, the snake format of the draft means that they will not draft another player until 23 picks later. Conversely, a team drafting in the last spot will be able to stack 2 players of the same approximate value in the first two rounds. Over the course of an entire draft, do these differences in draft position balance to be roughly equal, or is there an ideal starting position? Additionally, is there a distinct difference in approach depending on the starting position? We seek to determine the answer to these questions in this section.
 
-The **base** model selects in the sixth position, which means that the team will be picking in the middle of each round.
+The `base` model selects in the sixth position, which means that the team will be picking in the middle of each round.
 """
 
 # ╔═╡ 3d3abc57-6882-4b37-9a16-e9aeb0dc05ab
 md"""
 ### First Position
 
-Let's start with looking at drafting in the **first** position.
+Let's start with looking at drafting in the first position.
 """
 
 # ╔═╡ 9bc0fe08-4704-4ef8-9c57-de80e301dcbc
@@ -538,18 +538,18 @@ end
 
 # ╔═╡ bbc5fe31-51d7-4e98-b42f-9e7cad561568
 md"""
-The early draft strategy certainly shifts when selecting from the **first** position. This roster has a more balanced approach, selecting two running backs and two wide receivers in the first four rounds. This contrasts with the *heroRB* strategy observed when draft sixth overall.
+The early draft strategy certainly shifts when examining the `first` position model. This roster has a more balanced approach, selecting two running backs and two wide receivers in the first four rounds. This contrasts with the strong running back strategy observed when drafting sixth overall.
 
-Many of the same players appear here compared to the **base** case, again indicating that they are a great value at their price. Christian McCaffrey has the highest projected point total among position players, so it seems this model will always opt to select him if possible. 
+Many of the same players appear here compared to the `base` case, again indicating that they are a great value at their price. Christian McCaffrey has the highest projected point total among position players, so it seems this model will always opt to select him if possible. 
 
-In the middle and later rounds, the strategy remains mostly the same. Quarterbacks are taken near the end and two tight ends are drafted, all four of which are the same players selected in the **base** model.
+In the middle and later rounds, the strategy remains consistent. Quarterbacks are taken near the end, and two tight ends are drafted, all four of which are the same players selected in the **base** model.
 """
 
 # ╔═╡ 2d082468-39ca-45b5-86ee-275ad6e58c35
 md"""
 ### Twelfth Position
 
-Let's now move to drafting at the end of the first round, in the **twelfth** position.
+Let's now move to drafting at the end of the first round, in the twelfth position.
 """
 
 # ╔═╡ 8b5f2990-e053-423b-9852-5aa9cae330f5
@@ -561,13 +561,13 @@ end
 
 # ╔═╡ a82aeeb8-9aee-4e3f-8164-3e2a0ebebc40
 md"""
-Like in the **base** model, this one opts to forgo the *heroRB* strategy and balance the initial rounds equally with running backs and wide receivers. One notable difference is the philosophy around drafting a quarterback: Baker Mayfield is selected in the eighth round. This is a little earlier than in the **base** case, suggesting there is a fall off in value for quarterbacks after Caleb Williams. In other areas, this roster is quite similar to the previous two cases.
+Like in the other two cases, the `twelfth` position model balances the initial rounds equally with running backs and wide receivers. One notable difference is the philosophy around drafting a quarterback: Baker Mayfield is selected in the eighth round. This is a little earlier than in the `base` case, suggesting there is a falloff in value of quarterbacks after Caleb Williams. In other areas, this roster is quite similar to the previous models as well. Drafting in the `twelfth` position results in nearly 100 fewer projected fantasy points, a decrease in value of about 2.6 percent.
 """
 
 # ╔═╡ 36b50ae3-b06b-446f-b992-4bd3940e68fb
 md"""
 ### Summary
-Let's review a summary of the projected point totals in the three scenarios as well as the excess value when compared to the **base** model.
+Let's review a summary of the projected point totals in the three scenarios as well as the excess value when compared to the `base` model.
 """
 
 # ╔═╡ d27c8ad6-6cc8-4c4b-81ff-5d643fd7d9f0
@@ -592,9 +592,9 @@ end
 
 # ╔═╡ 6534000e-2b9f-4c1e-ab50-6fd5d5d0e8cd
 md"""
-This is counterintuitive: drafting the the sixth position actually results in the largest increase in value relative to the other positions. The gap is between 50 and 100 points, which can be significant considering that individual weekly matchups can be decided by only a few points. The difference in points between drafting at the beginning or end of the first round is marginal, meaning a fantasy team owner should be ambivalent between the two unless they feel strongly about a certain player.
+This is counterintuitive: drafting in the sixth position actually results in the largest increase in value relative to the other positions. The gap is between 50 and 100 points, which can be significant considering that individual weekly matchups can be decided by only a few points. The difference in points between drafting at the beginning or end of the first round is marginal, meaning a fantasy team owner should be agnostic between the two unless they feel strongly about a certain player.
 
-The common thinking in the fantasy community is that drafting at the beginning or end of the first round would result in the most excess value (because you can stack picks back-to-back throughout the draft), but this is evidence that this is not the case. To determine whether this finding is an artifact of this specific set of projections, let's look at the actual total fantasy points scored through Week 11 by start position. This should eliminate any projection system bias.
+The common thinking in the fantasy community is that drafting at the beginning or end of the first round would result in the most excess value (because you can stack picks back-to-back throughout the draft), but this is evidence that this is not the case. To determine whether this finding is an artifact of this specific set of projections, let's look at the actual total fantasy points scored through Week 13 by start position. This should eliminate any projection system bias.
 """
 
 # ╔═╡ 631772f8-417f-488a-adaa-84a538662c81
@@ -607,12 +607,12 @@ begin
 
 		# run model
 		pmod = run_fantasy_football_draft(position_requirements; 
-										  projections=:week11_actual_ppr_points,
+										  projections=:week13_actual_ppr_points,
 										  start_position=p,
 										  verbose=false);
 	
 			# get model point total
-			pts = sum(pmod[!, :week11_actual_ppr_points])
+			pts = sum(pmod[!, :week13_actual_ppr_points])
 
 			# append to list
 			append!(actual_point_totals, pts)
@@ -632,7 +632,7 @@ end
 
 # ╔═╡ ab3dc92b-bf9f-4f66-9472-4fdef8b5c5cf
 md"""
-Based on the actual results of the optimal fantasy team, it is clear that drafting in the middle of the first round is the most desirable option. It seems it is marginally better to draft in the twelfth position over the first; however, this may be specific to the 2025 season and not generalizable to all future fantasy years since the numbers are so close.
+Based on the actual results of the optimal fantasy team, it is clear that drafting in the middle of the first round is the most desirable option. It seems it is marginally better to draft in the twelfth position over the first; however, this may be specific to the 2025 season and not generalizable to all future fantasy years since the numbers are close.
 """
 
 # ╔═╡ d5082e91-4464-4cad-9e6e-f148c1251d94
@@ -646,7 +646,7 @@ The next parameter we will consider is draft value, which is what we are using t
 md"""
 ### Maximum Draft Position
 
-Initially, let's consider adjusting the player draft values to their **max** pick.
+Initially, let's consider adjusting the player draft values to their max pick.
 """
 
 # ╔═╡ c8aeede0-2697-4e75-9259-884383788e34
@@ -658,18 +658,18 @@ end
 
 # ╔═╡ 1de4f2c4-dc7d-4831-aaef-1a4333d63cb1
 md"""
-Giving a low value to each players frees up our model, allowing it a wider selection of players that were previously unavailable. This **max** model doubles down on prioritizing running backs, drafting five running backs in the first six rounds. The big addition here is De'von Achane, another pass-catching back in the same vein as Christian McCaffrey.
+Giving a low value to each players frees up our model, allowing it a wider selection of players that were previously unavailable. This `max` model doubles down on prioritizing running backs, drafting five running backs in the first six rounds. The big addition here is De'von Achane, another pass-catching back in the same vein as Christian McCaffrey.
 
-Quarterbacks and tight ends are taken considerably later in the draft when compared to the **base** model that uses ADP. This suggests that it is optimal to wait on these position groups as long as possible. This comes from experience and knowing the draft room you are in.
+Quarterbacks and tight ends are taken considerably later in the draft when compared to the `base` model that uses ADP. This suggests that it is optimal to wait on these position groups as long as possible. This comes from experience and knowing the draft room you are in.
 
-While a lot of the same players are selected, they are taken in later rounds than in the **base** model. This reminds us it is important to be aware of players sliding down the draft board and capitalize when it happens. In this case, Achane fell and the model took advantage.
+While a lot of the same players are selected, they are taken in later rounds than in the `base` model. This reminds us it is important to be aware of players sliding down the draft board and capitalize when it happens. In this case, Achane fell and the model took advantage.
 """
 
 # ╔═╡ 02a25201-608b-49bf-a157-7665d49aad74
 md"""
 ### Minimum Draft Position
 
-Next, we will consider the **min** pick for each player.
+Next, we will consider the min pick for each player.
 """
 
 # ╔═╡ 8ea00307-d6fa-4b4a-9030-dd5d81f4a999
@@ -681,16 +681,16 @@ end
 
 # ╔═╡ 2ac8fc7c-5936-426a-83e5-2b9a8011b033
 md"""
-This model is more restricted by assigning lower values to each player's draft position. We see that a lot of the position players are repeated, but they are drafted much earlier. This signifies that running backs and wide receivers are intregral to the success of any fantasy team and they should be prioritized. Additionally, the elite talent is missing from this roster; there is no single superstar who will clearly be the hero of the team.
+This `min` model is more restricted by assigning lower values to each player's draft position. We see that a lot of the position players are repeated, but they are drafted much earlier. This signifies that running backs and wide receivers are intregral to the success of any fantasy team and they should be prioritized. Additionally, the elite talent is missing from this roster; there is no single superstar who will clearly be the hero of the team.
 
-The actual strategy is more balanced between running backs and wide receivers in the first several rounds. The position groups that are hurt the most here are quarterbacks and tight ends. All four of them are selected in the last four rounds, meaning the **min** model is getting the worst remaining players. This is especially detrimental with quarterbacks, since Tua Tagovailoa and Geno Smith are bottom third talents with large drops in projected fantasy points when compared to other models. Instead of reaching on earlier rounds for the better quarterbacks, this **min** model still asserts that waiting as long as possible on this position, no matter how dire it seems, is still the optimal strategy.
+The actual strategy is more balanced between running backs and wide receivers in the first several rounds. The position groups that are hurt the most here are quarterbacks and tight ends. All four of them are selected in the last four rounds, meaning the `min` model is getting the worst remaining players. This is especially detrimental with quarterbacks, since Tua Tagovailoa and Geno Smith are bottom third talents with large drops in projected fantasy points when compared to other models. Instead of reaching on earlier rounds for the better quarterbacks, this `min` model still asserts that waiting as long as possible on this position, no matter how dire it seems, is still the optimal strategy.
 """
 
 # ╔═╡ 2d591b47-6242-47d8-8f5d-ff772f2a625c
 md"""
 ### Summary
 
-To wrap up this section, let's compare projected point totals and the change from the **base** model in a table.
+To wrap up this section, let's compare projected point totals and the change from the `base` model in a table.
 """
 
 # ╔═╡ 8f5d13a7-3c51-4ef8-b917-0616d84a44bb
@@ -715,9 +715,9 @@ end
 
 # ╔═╡ 7373690d-92c7-44e4-a242-0d645f9cc211
 md"""
-The projected point totals are directional exactly what we might guess: highest for the **max** model and lowest for the **min** model; however, the insight here is that the benefit from lower player values is not as great as the cost for higher players values. This means even in the most optimistic draft where all players are undervalued by the other fantasy teams, the increase in your roster's total points is only about 5 percent. In other words, highly competitive leagues more heavily penalize overvaluing players rather than rewarding drafting undervalued players.
+The projected point totals are directionally exactly what we might guess: highest for the `max` model and lowest for the `min` model; however, the insight here is that the benefit from lower player values is not as great as the cost for higher players values. This means even in the most optimistic draft where all players are undervalued by the other fantasy teams, the increase in your roster's total points is only about 5 percent. In other words, highly competitive leagues more heavily penalize overvaluing players rather than rewarding drafting undervalued players.
 
-One other observation is that the draft position enforcement constraints are relaxed in the **max** model and restricted in the **min** model. This is because only the coefficients of the **R**ight-**H**and **S**ide (RHS) are adjusted.
+One other observation is that the draft position enforcement constraints are relaxed in the `max` model and restricted in the `min` model. This is because only the coefficients of the **R**ight-**H**and **S**ide (RHS) are adjusted.
 """
 
 # ╔═╡ 7f758198-372a-450d-8f00-4b83298bf801
@@ -728,18 +728,18 @@ One of the great things about fantasy leagues is that they are highly customizab
 
 * **Point Per Reception (PPR):** Each reception a player makes is worth a full point. This is the new standard that has emerged in the last couple decades.
 
-* **Half Point PPR:** Each reception a player makes is worth half a point. More common in industry and high-stakes leagues; this is viewed as a more balanced scoring option.
+* **Half-PPR:** Each reception a player makes is worth half a point. More common in industry and high-stakes leagues; this is viewed as a more balanced scoring option.
 
-* **Standard:** There are no points awarded for a player making a reception. This was the default option scross most leagues for the first several decades of fantasy football, hence why it is called *standard* scoring.
+* **Standard:** There are no points awarded for a player making a reception. This was the default option across most leagues for the first several decades of fantasy football, hence why it is called *standard* scoring.
 
-Obviously, the less points that are scored for receptions, the less total fantasy points a drafted team will accumulate. All else equal, PPR projections will always be higher than half point PPR projections, which will always be higher than standard scoring projections. For this reason, we will forgo analyzing total points scored for these scenarios.
+Obviously, the less points that are scored for receptions, the less total fantasy points a drafted team will accumulate. All else equal, PPR projections will always be higher than half-point PPR projections, which will always be higher than standard scoring projections. For this reason, we will forgo analyzing total points scored for these scenarios.
 """
 
 # ╔═╡ 725bf2a1-18b3-4471-9bb2-3ecc293d9d48
 md"""
-### Half Point PPR
+### Half-PPR
 
-Looking at the same projections from *The Athletic*, let's reduce the points per reception to **half** and see how this impacts draft strategy and team composition.
+Looking at the same projections from *The Athletic*, let's reduce the points per reception to half and see how this impacts draft strategy and team composition.
 """
 
 # ╔═╡ 2cbcb197-e696-4527-b2d1-2e23badd60f5
@@ -751,16 +751,16 @@ end
 
 # ╔═╡ e5520263-a7c4-44d6-9ba6-570549bce81e
 md"""
-This model chooses to select six running backs in a row to start the draft. The two starting flex positions will be occupied by running backs, meaning that four running backs will play each week. Many of the names we have seen before are included among these six, but some new additions are Omarion Hampton, and Isiah Pacheco.
+The `half`-point model chooses to select six running backs in a row to start the draft. The two starting flex positions will be occupied by running backs, meaning that four running backs will play each week. Many of the names we have seen before are included among these six, but some new additions are Omarion Hampton and Isiah Pacheco.
 
-The **half** model does not completely give up on wide receivers, still selecting four of them in the middle to late rounds. It should also be pointed out that only one tight end is selected here, which means that their value is diminished enough that a roster should only carry one. In fact, he was even drafted in the final round.
+The `half` model does not completely give up on wide receivers, still selecting four of them in the middle to late rounds. It should also be pointed out that only one tight end is selected here, which means that their value is diminished enough that a roster should only carry one. In fact, he was even drafted in the final round.
 """
 
 # ╔═╡ 7596ad4e-008c-4a45-82b8-7f2bfbd0158e
 md"""
 ### Standard Scoring
 
-Now we will completely remove the points attributed to receptions for a **standard** scoring model.
+Now we will completely remove the points attributed to receptions for a standard scoring model.
 """
 
 # ╔═╡ 5c3285e6-987f-4412-a925-bc79bfc9914b
@@ -772,29 +772,29 @@ end
 
 # ╔═╡ d52373a9-57d6-4d93-ba01-e523fd907720
 md"""
-Wow, the first eight rounds are all running backs and only two wide receivers are selected period. This **standard** model is indicating that recievers of any kind (including tight ends) have significantly less value compared to running backs. The wide receiver positional requirement has become binding in this model.
+Wow, the first eight rounds are all running backs and only two wide receivers are selected period. This `standard` model is indicating that receivers of any kind (including tight ends) have significantly less value compared to running backs. The wide receiver positional requirement has become binding in this model.
 
-Of course, only four of these running backs will start, but this is also a position group that frequently suffers injuries that require prolonged absences. The deep bench will certainly supplement the roster in such cases. Additionally, one of these backs drafted in the middle rounds could end up being a sleeper pick, offering surplus value and supplanting a starter drafted earlier. Javonte Williams would fall into this category since he has been one of the top 10 running backs through Week 11 of the NFL season, yet he is taken in the eighth round.
+Of course, only four of these running backs will start, but this is also a position group that frequently suffers injuries that require prolonged absences. The deep bench will certainly supplement the roster in such cases. Additionally, one of these backs drafted in the middle rounds could end up being a sleeper pick, offering surplus value and supplanting a starter drafted earlier. Javonte Williams would fall into this category since he has been one of the top 10 running backs through Week 13 of the NFL season, yet he is taken in the eighth round.
 """
 
 # ╔═╡ ce466b68-8c16-4aa6-b034-4826b2c468aa
 md"""
 ### Summary
 
-In summary, the less points that are given to receptions, the more value is placed on running backs. This result seems obvious from the definition of the scoring. While the **half** point model still attributes some value to receivers, the **standard** model eliminates most of this.
+To review, the less points that are given to receptions, the more value is placed on running backs. This result seems apparent from the definition of the scoring. While the `half`-point model still attributes some value to receivers, the `standard` model eliminates most of this.
 
-The curious thing is that even in a full point PPR league, it is still optimal to stack running backs in the first two rounds. We observed this in the **base** model. No receiver can approach the value of the elite running backs in the 2025 scoring environment. Alternatively, another interpretation is that *The Athletic's* projections may be biased towards running backs.
+The curious thing is that even in a full-point PPR league, it is still optimal to stack running backs in the first two rounds. We observed this in the `base` model. No receiver can approach the value of the elite running backs in the 2025 scoring environment. An alternative interpretation is that *The Athletic's* projections may be biased towards running backs.
 """
 
 # ╔═╡ 778c8dec-5c78-4a3d-9104-e586474e097f
 md"""
-## Zero Tight Ends
+## Tight End Requirement
 
 There has been a growing movement in the fantasy community, especially among expert players, to eliminate the strict tight end requirement in favor of a TE/WR flexible position. The reason for this is twofold:
 
 1) Tight end production is highly volatile. Even the elite players post game scores with near zero points several times per year.
 
-2) There is a lack of quality tight end options. Generally speaking, there is a small handful of highly productive players, and then a steep drop off to a pool of tight ends of approximately the same low value.
+2) There is a lack of quality tight end options. Generally speaking, there is a small handful of highly productive players, and then a steep drop-off to a pool of tight ends of approximately the same low value.
 
 My hypothesis is that no tight ends are drafted if this constraint is removed. Let's see if this is the case.
 """
@@ -808,21 +808,21 @@ end
 
 # ╔═╡ 53eeb0f9-ab75-4c6e-b75e-61eee7b356f6
 md"""
-There is no change to the roster of the **base** case. We should have guessed this considering that this constraint is not binding; there are two tight ends drafted.
+There is no change to the roster of the `base` case. We should have guessed this considering that this constraint is not binding; there are two tight ends drafted.
 
-What about for any of the other projection systems, including actual PPR points through Week 11?
+What about for any of the other projection systems, including actual PPR points through Week 13?
 """
 
 # ╔═╡ ba2e0434-57a5-4cfc-9ac3-5eb9995d4703
 begin
 	# create dictionary of projection systems and col names
 	proj = OrderedDict(
-		"Athletic Half PPR" => :athletic_half_projected_points, 
+		"Athletic Half-PPR" => :athletic_half_projected_points, 
 		"Athletic Standard PPR" => :athletic_std_projected_points, 
 		"PFF PPR" => :pff_ppr_projected_points, 
 		"numberFire PPR" => :numberfire_ppr_projected_points, 
-		"Rotoballer PPR" => :rotoballer_ppr_projected_points, 
-		"Week 11 Actual PPR" => :week11_actual_ppr_points
+		"RotoBaller PPR" => :rotoballer_ppr_projected_points, 
+		"Week 13 Actual PPR" => :week13_actual_ppr_points
 	)
 
 	# initialize empty list
@@ -851,9 +851,9 @@ end
 
 # ╔═╡ 070163ab-18f2-47e1-96b5-78a0d6377c8d
 md"""
-There is only one projection system, *numberFire*, that does not draft any tight ends when the requirement is removed. Even completely eliminating points per receptions does not remove tight ends from the optimal roster. This is evidence that our initial hypothesis is not correct. While the volatility of week-to-week tight end scoring can be frustrating, it appears that even an average tight end is preferable to a subpar wide receiver. If other fantasy players in a draft have the same intuition around tight ends, this is certainly a fact that can be exploited to improve the value of a roster. 
+There is only one projection system, numberFire, that does not draft any tight ends when the requirement is removed. Even completely eliminating points per receptions does not remove tight ends from the optimal roster. This is evidence that our initial hypothesis is not correct. While the volatility of week-to-week tight end scoring can be frustrating, it appears that even an average tight end is preferable to a subpar wide receiver. If other fantasy players in a draft have the same intuition around tight ends, this is certainly a fact that can be exploited to improve the value of a roster. 
 
-Creating a combination WR/TE position instead of TE-only does not diminish their value in a material way; however, it does offer enhanced roster flexibility in season. For example, if all of your tight ends have the same bye week, a wide receiver can be started in their place. This might not lead to more expected points that week, but it eliminates the need to drop a player and claim a tight end on the waiver wire.
+Creating a combination WR/TE position instead of TE-only does not reduce their value in a material way; however, it does offer enhanced roster flexibility in season. For example, if all of your tight ends have the same bye week, a wide receiver can be started in their place. This might not lead to more expected points that week, but it eliminates the need to drop a player and claim a tight end on the waiver wire.
 """
 
 # ╔═╡ e298cc46-7a41-4f33-8672-6bb678d56b0a
@@ -861,10 +861,10 @@ md"""
 
 ## Summary
 
-To wrap up, let's review the key takeways that have been discovered by performing a scenario analysis on the five parameters.
+To wrap up, let's review the key takeaways that have been discovered by performing a scenario analysis on the five parameters.
 
 **Projection System**\
-The most powerful projection system, in terms of total possible points through Week 11, was *Rotoballer* by a large margin. Each system resulted in a different draft strategy in the early rounds, but all of them followed similar approaches to selecting quarterbacks and tight ends.
+The most powerful projection system, in terms of total possible points through Week 13, was *Rotoballer* by a large margin. Each system resulted in a different draft strategy in the early rounds, but all of them followed similar approaches to selecting quarterbacks and tight ends.
 
 **Starting Draft Position:**\
 There is evidence that drafting in the middle of the first round has an advantage compared to drafting in the beginning or end. Many of the same players are drafted in all three cases, the primary difference is how the first couple rounds are handled.
@@ -881,9 +881,9 @@ Removing a strict tight end roster spot in favor to a TE/WR flexible position do
 **Specific Players**\
 Throughout all scenario analyses, certain players repeatedly were drafted and often in the same spots. This is strong evidence that these players are mispriced in the fantasy marketplace and shrewd managers should capitalize on the value they offer.
 
-The unicorn running back Christian McCaffrey is the consensus first round pick for the 2025 NFL fantasy season. Other running backs that were routinely selected include: Bucky Irving, Alvin Kamara, and James Conner. The common theme between these four players is that they are skilled at catching the ball in addition to rushing; a valuable skill to have in any PPR or half-PPR league. 
+The unicorn running back Christian McCaffrey is the consensus first round pick for the 2025 NFL fantasy season. Other running backs that were routinely selected include: Bucky Irving, Alvin Kamara, and James Conner. The shared trait between these four players is that they are skilled at catching the ball in addition to rushing: a valuable skill to have in any PPR or half-PPR league. 
 
-The quarterbacks that many models chose to draft are: Baker Mayfield, Caleb Williams, and Justin Fields. These players are mobile and frequently use their legs to score rushing touchdowns, a key separator since a rushing touchdown is worth 50 percent more points compared to a passing touchdown. The wide receivers and tight ends that are commonly on rosters include: Tyreek Hill, DK Metcalf, Jakobi Meyers, Cooper Kupp, Darnell Mooney, Jayden Higgins, Travis Kelce, and Hunter Henry. These receivers should be targeted as they are molstly coming off of disappointing 2024 seasons or are on new teams in 2025.
+The quarterbacks that many models chose to draft are Baker Mayfield, Caleb Williams, and Justin Fields. These players are mobile and frequently use their legs to score rushing touchdowns, a key separator since a rushing touchdown is worth 50 percent more points compared to a passing touchdown. Wide receivers and tight ends that are commonly on model rosters include: Tyreek Hill, DK Metcalf, Jakobi Meyers, Cooper Kupp, Darnell Mooney, Jayden Higgins, Travis Kelce, and Hunter Henry. These receivers should be targeted as they are either coming off disappointing 2024 seasons or are on new teams in 2025.
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -1402,7 +1402,7 @@ version = "5.8.0+1"
 
 # ╔═╡ Cell order:
 # ╟─ed6d51fc-3ad1-4864-935f-b0489d70536e
-# ╠═a5dcf5d4-22fd-4422-b7af-b1a77f08ce40
+# ╟─a5dcf5d4-22fd-4422-b7af-b1a77f08ce40
 # ╟─37b28b04-7d4a-48b9-8460-ade24b589718
 # ╠═3c75db1e-c7d1-11f0-30bb-6dc7f14d4063
 # ╟─fde70ca8-dcd9-48fa-87cc-c3f9bd5db92c
@@ -1439,7 +1439,7 @@ version = "5.8.0+1"
 # ╠═d062b450-06af-4cd2-a9c7-6d5376250823
 # ╟─3562bd2a-9d8c-4c2f-84c1-6793c047bb52
 # ╟─eb6dd48c-a72b-44ef-b55d-121d41ff8347
-# ╟─05a5c19a-03cd-4ac5-a9b4-d7c0d8e974f3
+# ╠═05a5c19a-03cd-4ac5-a9b4-d7c0d8e974f3
 # ╟─a7c5e1fd-eeba-46e3-90c0-ee67a275856c
 # ╟─3a63c7b0-ceb6-4cf6-a5fc-bb5352ea6aab
 # ╟─3d3abc57-6882-4b37-9a16-e9aeb0dc05ab
@@ -1451,7 +1451,7 @@ version = "5.8.0+1"
 # ╟─36b50ae3-b06b-446f-b992-4bd3940e68fb
 # ╠═d27c8ad6-6cc8-4c4b-81ff-5d643fd7d9f0
 # ╟─6534000e-2b9f-4c1e-ab50-6fd5d5d0e8cd
-# ╟─631772f8-417f-488a-adaa-84a538662c81
+# ╠═631772f8-417f-488a-adaa-84a538662c81
 # ╟─ab3dc92b-bf9f-4f66-9472-4fdef8b5c5cf
 # ╟─d5082e91-4464-4cad-9e6e-f148c1251d94
 # ╟─bfbf6471-46d9-48a8-82c9-e0c56ec3f0a4
