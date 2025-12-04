@@ -20,12 +20,12 @@ Data for the projections is obtained from several different sources, including:
 -   [**numberFire**](https://www.fanduel.com/research/fantasy-football-printable-cheat-sheet-top-200-players-for-12-team-ppr-league-2025)
 -   [**Rotoballer**](https://www.rotoballer.com/free-fantasy-football-draft-cheat-sheet)
 
-Draft position and related data was obtained from the [**N**ational **F**antasy **C**hampionship (NFC)](https://nfc.shgn.com/adp/football). Specifically, Rotowire Online 12-team leagues with drafts during the week leading up to Week 1 kickoff.
+Draft position and related data was obtained from the [**N**ational **F**antasy **C**hampionship (NFC)](https://nfc.shgn.com/adp/football) platform. Specifically, RotoWire Online 12-team leagues with drafts during the week leading up to Week 1 kickoff.
 
 The goal of the project is to:
 
 1)  Successfully model a fantasy football draft as a BIP model;
-2)  Compare this against actual data through Week 11 of the 2025 NFL season; and
+2)  Compare this against actual data through Week 13 of the 2025 NFL season; and
 3)  Conduct a series of scenario analyses by changing various aspects of the draft.
 
 The scenario analyses will include:
